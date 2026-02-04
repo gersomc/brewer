@@ -1,11 +1,12 @@
 package storage.local;
 
-import static  java.nio.file.FileSystems.getDefault;
+import static java.nio.file.FileSystems.getDefault;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,17 +17,48 @@ import storage.FotoStorage;
 public class FotoStorageLocal implements FotoStorage {
 
 	private static final Logger logger = LoggerFactory.getLogger(FotoStorageLocal.class);
-	
+
 	private Path local;
 	private Path localTemporario;
-	
+
 	public FotoStorageLocal() {
 		this(getDefault().getPath(System.getenv("HOMEDRIVE"), "/brewerfotos"));
-		}
-	
+	}
+
 	public FotoStorageLocal(Path path) {
 		this.local = path;
 		criarPastas();
+	}
+
+	@Override
+	public String salvarTemporariamente(MultipartFile[] files) {
+		String novoNome = null;
+
+		if (files != null && files.length > 0) {
+			MultipartFile arquivo = files[0];
+			novoNome = renomearArquivo(arquivo.getOriginalFilename());
+
+			try {
+
+				arquivo.transferTo(new File(
+						this.localTemporario.toAbsolutePath().toString() + getDefault().getSeparator() + novoNome));
+			} catch (IOException e) {
+				throw new RuntimeException("Erro salvando foto temporariamente", e);
+			}
+
+		}
+		return novoNome;
+
+	}
+
+	@Override
+	public byte[] recuperarFotoTemporaria(String nome) {
+		
+		try {
+			return Files.readAllBytes(this.localTemporario.resolve(nome));
+		} catch (IOException e) {
+			throw new RuntimeException("Erro lendo foto temporária", e);
+		}
 	}
 
 	private void criarPastas() {
@@ -34,7 +66,7 @@ public class FotoStorageLocal implements FotoStorage {
 			Files.createDirectories(this.local);
 			this.localTemporario = this.local.resolve("temp");
 			Files.createDirectories(this.localTemporario);
-			
+
 			if (logger.isDebugEnabled()) {
 				logger.debug("Pastas criadas para salvar as fotos.");
 				logger.debug("Pasta default: " + this.local.toAbsolutePath());
@@ -43,22 +75,17 @@ public class FotoStorageLocal implements FotoStorage {
 		} catch (IOException e) {
 			throw new RuntimeException("Erro criando pastas para salvar as fotos", e);
 		}
-		
+
 	}
 
-	@Override
-	public void salvarTemporariamente(MultipartFile[] files) {
-		if (files != null && files.length > 0) {
-			MultipartFile arquivo = files[0];
-			try {
-			
-				arquivo.transferTo(new File(this.localTemporario.toAbsolutePath().toString() + getDefault().getSeparator() + arquivo.getOriginalFilename()));
-			} catch ( IOException e) {
-				throw new RuntimeException("Erro salvando foto temporariamente", e);
-			}
-		
+	private String renomearArquivo(String nomeOriginal) {
+		String novoNome = UUID.randomUUID().toString() + "_" + nomeOriginal;
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Nome original do arquivo: " + nomeOriginal);
+			logger.debug("Novo nome do arquivo: " + novoNome);
 		}
-			
+		return novoNome;
 	}
-	
+
 }
