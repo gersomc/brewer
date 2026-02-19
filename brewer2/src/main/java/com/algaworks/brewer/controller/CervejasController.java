@@ -18,10 +18,11 @@ import com.algaworks.brewer.model.Sabor;
 
 import repository.Cervejas;
 import repository.Estilos;
+import repository.filter.CervejaFilter;
 import service.CadastroCervejaService;
 
 @Controller
- @RequestMapping("/cervejas")
+@RequestMapping("/cervejas")
 public class CervejasController {
 
 	@Autowired
@@ -57,17 +58,17 @@ public class CervejasController {
 		attributes.addFlashAttribute("mensagem", "Cerveja salva com sucesso!");
 		return new ModelAndView("redirect:/cervejas/novo");
 	}
-	
+
 	@GetMapping
-	public ModelAndView	pesquisar() {
+	public ModelAndView pesquisar(CervejaFilter cervejaFilter, BindingResult result) {
 		ModelAndView mv = new ModelAndView("cerveja/PesquisaCervejas");
-		
+
 		mv.addObject("estilos", estilos.findAll());
 		mv.addObject("sabores", Sabor.values());
 		mv.addObject("origens", Origem.values());
-		
-		mv.addObject("cervejas", cervejas.findAll());
-		
+
+		mv.addObject("cervejas", cervejas.filtrar(cervejaFilter));
+
 		return mv;
 	}
 

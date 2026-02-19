@@ -7,8 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import com.algaworks.brewer.model.Cerveja;
 
+import repository.helper.cerveja.CervejasQueries;
+
 @Repository
-public interface Cervejas extends JpaRepository<Cerveja, Long> {
+public interface Cervejas extends JpaRepository<Cerveja, Long>, CervejasQueries {
 
 	
 	public Optional<Cerveja> findBySkuIgnoreCase(String sku);
