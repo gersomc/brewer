@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
+import net.coobird.thumbnailator.Thumbnails;
 import storage.FotoStorage;
 
 public class FotoStorageLocal implements FotoStorage {
@@ -68,6 +69,8 @@ public class FotoStorageLocal implements FotoStorage {
 		} catch (IOException e) {
 			throw new RuntimeException("Erro movendo foto para destino final", e);
 		}
+		
+		
 
 	}
 
