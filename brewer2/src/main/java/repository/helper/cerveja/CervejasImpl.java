@@ -28,7 +28,14 @@ public class CervejasImpl implements CervejasQueries {
 	@Transactional(readOnly = true)
 	public List<Cerveja> filtrar(CervejaFilter filtro, Pageable pageable ) {
 		Criteria criteria = manager.unwrap(Session.class).createCriteria(Cerveja.class);
-
+		
+		int paginaAtual = pageable.getPageNumber();
+		int totalRegistrosPorPagina = pageable.getPageSize();
+		int primeiroRegistro = paginaAtual * totalRegistrosPorPagina;
+		
+		criteria.setFirstResult(primeiroRegistro);
+		criteria.setMaxResults(totalRegistrosPorPagina);
+		
 		if (filtro != null) {
 			if (!StringUtils.isEmpty(filtro.getSku())) {
 				criteria.add(Restrictions.eq("sku", filtro.getSku()));
